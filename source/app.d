@@ -19,4 +19,6 @@ void main()
 	listenHTTP(settings, router);
 
 	log("Started teasmade-io REST API");
+
+	runApplication();
 }
