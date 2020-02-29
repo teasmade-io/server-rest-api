@@ -2,14 +2,14 @@ module rest.ActuatorRest;
 
 import rest.IActuator;
 
-class ActuatorRest : IActuator
+synchronized class ActuatorRest : IActuator
 {
 
     this()
     {
     }
 
-    int brew(int cups)
+    override int brew(int cups)
     {
         if (brew_status_.done)
         {
@@ -19,8 +19,9 @@ class ActuatorRest : IActuator
             {
                 import std.conv;
                 import std.experimental.logger;
+                import core.atomic;
                 log("Brewing cup: " ~ to!string(brew_status_.current));
-                brew_status_.current--;
+                core.atomic.atomicOp!"-="(this.brew_status_.current, 1);
             }
             brew_status_.done = true;
             return 200; // 200: OK
@@ -29,5 +30,5 @@ class ActuatorRest : IActuator
         }
     }
 
-    brew_status brew_status_;
+    private brew_status brew_status_;
 }

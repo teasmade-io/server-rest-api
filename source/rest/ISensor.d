@@ -2,7 +2,7 @@ module rest.ISensor;
 
 import vibe.d;
 
-interface ISensor
+synchronized interface ISensor
 {
 
     struct overhead_status {

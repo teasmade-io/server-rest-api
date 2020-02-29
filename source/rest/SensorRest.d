@@ -2,7 +2,7 @@ module rest.SensorRest;
 
 import rest.ISensor;
 
-class SensorRest : ISensor
+synchronized class SensorRest : ISensor
 {
 
     this()
@@ -10,10 +10,10 @@ class SensorRest : ISensor
         overhead_.temp = 0.0;
     }
 
-    float getTemperature()
+    override float getTemperature()
     {
         return overhead_.temp;
     }
 
-    overhead_status overhead_;
+    private overhead_status overhead_;
 }

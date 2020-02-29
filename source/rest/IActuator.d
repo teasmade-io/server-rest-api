@@ -2,7 +2,7 @@ module rest.IActuator;
 
 import vibe.d;
 
-interface IActuator
+synchronized interface IActuator
 {
     struct brew_status {
         int total;
