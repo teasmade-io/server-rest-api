@@ -9,7 +9,7 @@ import rest.SensorRest;
 
 void serial_read_thread_fn(string serial_device_path, shared(SensorRest) sensor, shared(ActuatorRest) actuator)
 {
-	int retry = 0;
+	bool running = true;
 	auto serial_device = new SerialPortBlk(serial_device_path, 9600);
 	scope(exit)
 	{
@@ -17,15 +17,43 @@ void serial_read_thread_fn(string serial_device_path, shared(SensorRest) sensor,
 		log("Connection to " ~ serial_device_path ~ " closed");
 	}
 
-	try
+	while (running)
 	{
-		while (!receiveTimeout(dur!"msecs"(250), (bool v) {}) && !serial_device.closed)
+		try
 		{
-			byte[] buffer;
-			auto result = serial_device.read(buffer);
-			log("Read buffer[" ~ to!string(result.length) ~ "]: " ~ to!string(cast(char[])result));
+			// Check Parent Thread Liveness
+			auto message = receiveTimeout(dur!"msecs"(1));
+
+			char[256] buffer = 0;
+			char[] result = cast(char[]) serial_device.read(buffer, SerialPort.CanRead.anyNonZero);
+			debug log("Read buffer[", to!string(result.length) ~ "]: ", to!string(result));
+			
+			// Parse serial data
+			sensor.update(result);
+
+		} catch (TimeoutException e) {
+		} catch (ReadException e) {
+		} catch (OwnerTerminated e)
+		{
+			running = false;
+		} catch (PortClosedException e)
+		{
+			running = false;
+		} catch (Exception e) {
+			log("An exception occurred", e);
 		}
-	} catch (OwnerTerminated e) {}
+	}
+}
+
+string get_serial_device()
+{
+	string[] devices = SerialPortBase.listAvailable();
+	auto likely_devices = devices.filter!(s => (s.indexOf("ttyACM") > 0 || s.indexOf("tty.usbmodem") > 0)).array();
+	if (likely_devices.length > 1)
+	{
+		log("Multiple serial devices found: ", likely_devices);
+	}
+	return likely_devices[0];
 }
 
 void main()
@@ -39,9 +67,8 @@ void main()
 	router.registerRestInterface(sensor);
 	router.registerRestInterface(actuator);
 
-	string sensor_device_path = SerialPortBase.listAvailable()[0];
-	sensor_device_path = "/dev/tty.usbmodem14101";
-	log("Connecting to platform sensor hub device: " ~ sensor_device_path);
+	string sensor_device_path = get_serial_device();
+	log("Connecting to platform sensor hub device: ", sensor_device_path);
 
 	auto sensor_thread = spawn(&serial_read_thread_fn, sensor_device_path, sensor, actuator);
 
