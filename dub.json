@@ -9,7 +9,7 @@
 		"vibe-d:tls": "*"
 	},
 	"subConfigurations": {
-		"vibe-d:tls": "botan"
+		"vibe-d:tls": "notls"
 	},
 	"description": "Backend and REST API for teasmade.io",
 	"license": "proprietary",
