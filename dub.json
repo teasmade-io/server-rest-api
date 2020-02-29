@@ -1,0 +1,13 @@
+{
+	"authors": [
+		"teasmade.io"
+	],
+	"copyright": "Copyright © 2020, teasmade.io",
+	"dependencies": {
+		"serialport": "~>2.2.2",
+		"vibe-d": "~>0.8.6"
+	},
+	"description": "Backend and REST API for teasmade.io",
+	"license": "proprietary",
+	"name": "server-rest-api"
+}
