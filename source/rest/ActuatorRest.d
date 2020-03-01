@@ -29,7 +29,7 @@ class ActuatorRest : IActuator
     {
         if (brew_status_.sw == null) 
         {
-            return 100000;
+            return -1000000;
         }
         else {
             return brew_status_.sw.peek().total!"seconds";
