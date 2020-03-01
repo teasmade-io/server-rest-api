@@ -1,20 +1,20 @@
 module rest.IActuator;
 
+import std.datetime;
+import std.datetime.stopwatch : benchmark, StopWatch;
+
 import vibe.d;
 
-synchronized interface IActuator
+interface IActuator
 {
     struct brew_status {
-        int total;
-        int current;
-        bool done = true;
+        StopWatch* sw;
     }
 
-    /* 
-    Post data as:
-        { "brew": "2" }
-    */
     @path("/api/v1/brew")
     @method(HTTPMethod.POST)
-    int brew(int cups);
+    int brew() @safe;
+
+    @path("/api/v1/brew/time")
+    long seconds_since_brew() @safe;
 }

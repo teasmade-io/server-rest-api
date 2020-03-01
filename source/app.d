@@ -7,7 +7,7 @@ import vibe.d;
 import rest.ActuatorRest;
 import rest.SensorRest;
 
-void serial_read_thread_fn(string serial_device_path, shared(SensorRest) sensor, shared(ActuatorRest) actuator)
+void serial_read_thread_fn(string serial_device_path, shared(SensorRest) sensor)
 {
 	bool running = true;
 	auto serial_device = new SerialPortBlk(serial_device_path, 9600);
@@ -96,7 +96,7 @@ void main()
 
 	auto router = new URLRouter();
 	auto sensor = new shared(SensorRest);
-	auto actuator = new shared(ActuatorRest);
+	auto actuator = new ActuatorRest();
 
 	router.registerRestInterface(sensor);
 	router.registerRestInterface(actuator);
@@ -105,7 +105,7 @@ void main()
 	if (sensor_device_path == null) return;
 	log("Connecting to platform sensor hub device: ", sensor_device_path);
 
-	auto sensor_thread = spawn(&serial_read_thread_fn, sensor_device_path, sensor, actuator);
+	auto sensor_thread = spawn(&serial_read_thread_fn, sensor_device_path, sensor);
 
 	auto settings = new HTTPServerSettings;
 	settings.port = 8080;
