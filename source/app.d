@@ -106,6 +106,11 @@ void main()
 	router.registerRestInterface(sensor);
 	router.registerRestInterface(actuator);
 
+    // CORS
+    router.any("/api/*", delegate void(scope HTTPServerRequest req, scope HTTPServerResponse res) {
+        res.headers["Access-Control-Allow-Origin"] = "*";
+    });
+
 	string sensor_device_path = get_serial_device();
 	if (sensor_device_path == null) return;
 	log("Connecting to platform sensor hub device: ", sensor_device_path);
