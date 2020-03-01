@@ -17,5 +17,5 @@ interface IActuator
 
     @path("/api/v1/brew")
     @method(HTTPMethod.POST)
-    int brew() @trusted;
+    void brew() @trusted;
 }

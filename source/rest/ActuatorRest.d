@@ -5,6 +5,7 @@ import std.datetime;
 import std.datetime.stopwatch : benchmark, StopWatch, AutoStart;
 
 import rest.IActuator;
+import vibe.d : HTTPStatusException;
 
 class ActuatorRest : IActuator
 {
@@ -13,15 +14,15 @@ class ActuatorRest : IActuator
     {
     }
 
-    override int brew() @trusted
+    override void brew() @trusted
     {
-        if (brew_status_.sw == null || seconds_since_brew() > 30)
+        if (brew_status_.sw == null || seconds_since_brew() > 0)
         {
             brew_status_.sw = new StopWatch(AutoStart.yes);
             serial_thread.send("B\r\n");
-            return 200; // 200: OK
+            // 200 OK
         } else {
-            return 300; // 300: Temporarily Unavailable
+            throw new HTTPStatusException(300);
         }
     }
 
@@ -32,7 +33,7 @@ class ActuatorRest : IActuator
             return -1000000;
         }
         else {
-            return brew_status_.sw.peek().total!"seconds";
+            return (brew_status_.sw.peek().total!"seconds") - 35;
         }
     }
 
