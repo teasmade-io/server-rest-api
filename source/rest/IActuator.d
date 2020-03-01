@@ -11,10 +11,11 @@ interface IActuator
         StopWatch* sw;
     }
 
+    @path("/api/v1/brew/time")
+    @method(HTTPMethod.GET)
+    long seconds_since_brew() @safe;
+
     @path("/api/v1/brew")
     @method(HTTPMethod.POST)
     int brew() @trusted;
-
-    @path("/api/v1/brew/time")
-    long seconds_since_brew() @safe;
 }
