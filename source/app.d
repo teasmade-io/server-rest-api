@@ -17,6 +17,8 @@ void serial_read_thread_fn(string serial_device_path, shared(SensorRest) sensor,
 		log("Connection to " ~ serial_device_path ~ " closed");
 	}
 
+	char[] buffer;
+	int r_start = 0, r_end = 0;
 	while (running)
 	{
 		try
@@ -24,15 +26,42 @@ void serial_read_thread_fn(string serial_device_path, shared(SensorRest) sensor,
 			// Check Parent Thread Liveness
 			auto message = receiveTimeout(dur!"msecs"(1));
 
-			char[256] buffer = 0;
-			char[] result = cast(char[]) serial_device.read(buffer, SerialPort.CanRead.anyNonZero);
+			char[256] buf_read = 0;
+			char[] result = cast(char[]) serial_device.read(buf_read, SerialPort.CanRead.anyNonZero);
 			debug log("Read buffer[", to!string(result.length) ~ "]: ", to!string(result));
-			
-			// Parse serial data
-			sensor.update(result);
+
+			buffer = buffer ~ result;
+
+			for (ptrdiff_t s = buffer.indexOf(";\r\n"); s != -1; )
+			{
+				// Check validity
+				bool correct_ascii = true;
+				foreach (char c; buffer[0 .. s])
+				{
+					import std.ascii;
+					if (!c.isASCII()) {
+						correct_ascii = false;
+						break;
+					}
+				}
+				
+				if (correct_ascii && buffer[0 .. s].count(',') == 9)
+				{
+					import std.conv;
+					// Parse serial data
+					try {
+						sensor.update(buffer[0 .. s]);
+					} catch (ConvException e) {}
+				}
+
+				// Update buffer and next delimiter
+				buffer = buffer[s + 3 .. $];
+				s = buffer.indexOf(";\r\n", s);
+			}
 
 		} catch (TimeoutException e) {
 		} catch (ReadException e) {
+		} catch (SysCallException e) {
 		} catch (OwnerTerminated e)
 		{
 			running = false;
@@ -40,7 +69,7 @@ void serial_read_thread_fn(string serial_device_path, shared(SensorRest) sensor,
 		{
 			running = false;
 		} catch (Exception e) {
-			log("An exception occurred", e);
+			log("Exception occurred while receiving and parsing serial data: ", e);
 		}
 	}
 }

@@ -19,8 +19,9 @@ synchronized class SensorRest : ISensor
         debug
         {
             import std.experimental.logger;
-            log("sensor data: ", line);
+            debug log("sensor data: \"", line,"\"");
         }
+        if (data.length != 10) return;
 
         steam.temp = to!float(data[0]);
         steam.pressure = to!float(data[1]);
