@@ -82,6 +82,11 @@ string get_serial_device()
 	{
 		log("Multiple serial devices found: ", likely_devices);
 	}
+	else if (likely_devices.length == 0)
+	{
+		log("No serial devices detected.");
+		return null;
+	}
 	return likely_devices[0];
 }
 
@@ -97,6 +102,7 @@ void main()
 	router.registerRestInterface(actuator);
 
 	string sensor_device_path = get_serial_device();
+	if (sensor_device_path == null) return;
 	log("Connecting to platform sensor hub device: ", sensor_device_path);
 
 	auto sensor_thread = spawn(&serial_read_thread_fn, sensor_device_path, sensor, actuator);
