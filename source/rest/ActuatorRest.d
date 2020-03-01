@@ -15,7 +15,7 @@ class ActuatorRest : IActuator
 
     override int brew() @trusted
     {
-        if (seconds_since_brew() > 30)
+        if (brew_status_.sw == null || seconds_since_brew() > 30)
         {
             brew_status_.sw = new StopWatch(AutoStart.yes);
             serial_thread.send("B\r\n");
