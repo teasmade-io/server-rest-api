@@ -13,7 +13,7 @@ interface IActuator
 
     @path("/api/v1/brew")
     @method(HTTPMethod.POST)
-    int brew() @safe;
+    int brew() @trusted;
 
     @path("/api/v1/brew/time")
     long seconds_since_brew() @safe;

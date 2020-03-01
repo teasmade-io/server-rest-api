@@ -23,8 +23,13 @@ void serial_read_thread_fn(string serial_device_path, shared(SensorRest) sensor)
 	{
 		try
 		{
-			// Check Parent Thread Liveness
-			auto message = receiveTimeout(dur!"msecs"(1));
+			// Process messages and check if parent thread is still live
+			auto message = receiveTimeout(dur!"msecs"(1),
+			(string b)
+			{
+				log("Brew command sent");
+				serial_device.write(b);
+			});
 
 			char[256] buf_read = 0;
 			char[] result = cast(char[]) serial_device.read(buf_read, SerialPort.CanRead.anyNonZero);
@@ -106,6 +111,8 @@ void main()
 	log("Connecting to platform sensor hub device: ", sensor_device_path);
 
 	auto sensor_thread = spawn(&serial_read_thread_fn, sensor_device_path, sensor);
+
+	actuator.serial_thread = sensor_thread;
 
 	auto settings = new HTTPServerSettings;
 	settings.port = 8080;

@@ -1,5 +1,6 @@
 module rest.ActuatorRest;
 
+import std.concurrency;
 import std.datetime;
 import std.datetime.stopwatch : benchmark, StopWatch, AutoStart;
 
@@ -12,11 +13,12 @@ class ActuatorRest : IActuator
     {
     }
 
-    override int brew() @safe
+    override int brew() @trusted
     {
         if (seconds_since_brew() > 30)
         {
             brew_status_.sw = new StopWatch(AutoStart.yes);
+            serial_thread.send("B\r\n");
             return 200; // 200: OK
         } else {
             return 300; // 300: Temporarily Unavailable
@@ -35,4 +37,5 @@ class ActuatorRest : IActuator
     }
 
     private brew_status brew_status_;
+    public Tid serial_thread;
 }
